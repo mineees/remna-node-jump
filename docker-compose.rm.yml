@@ -1,0 +1,14 @@
+services:
+  remnanode:
+    image: remnawave/node:latest
+    restart: unless-stopped
+    hostname: remnanode
+    container_name: remnanode
+    network_mode: host
+    environment:
+      - NODE_PORT=2222
+      - SECRET_KEY=""
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576
