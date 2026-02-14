@@ -52,4 +52,4 @@ def get_established_ips(port: int) -> set[str]:
     return client_ips
 
 if __name__ == '__main__':
-    print(get_established_ips(443))
+    print(get_established_ips(int(input('Port:'))))
