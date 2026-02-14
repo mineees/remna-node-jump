@@ -25,7 +25,7 @@ def get_established_ips(port: int) -> set[str]:
 
     # IPv4
     try:
-        with open("/host/proc/net/tcp", "r") as f:
+        with open("/proc/net/tcp", "r") as f:
             next(f)  # заголовок
             for line in f:
                 parts = line.strip().split()
@@ -47,6 +47,7 @@ def get_established_ips(port: int) -> set[str]:
                 ip = hex_to_ipv4(remote_ip_hex)
                 client_ips.add(ip)
     except FileNotFoundError:
+        print('Error')
         pass
 
     return client_ips
