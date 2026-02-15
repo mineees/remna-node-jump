@@ -5,6 +5,6 @@ services:
     restart: unless-stopped
     network_mode: host
     volumes:
-      - ./snitch:/snitch:ro
+      - ./snitch:/snitch
     command: >
       sh -c "python /snitch/main.py"
