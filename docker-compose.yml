@@ -11,7 +11,7 @@ services:
 
   python_2:
     tty: true
-    image: python:3.11.14-alpine3.23
+    build: ./snitch_old
     restart: unless-stopped
     network_mode: host
     volumes:
