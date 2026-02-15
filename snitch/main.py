@@ -26,6 +26,8 @@ if __name__ == "__main__":
                 c.add(Connection(ip=ip, connected_at=int(time())))
 
         for connection in c.to_list():
+            connection.duration = int(time()) - connection.connected_at
+
             if connection.name is None:
                 name: str | None = a.detect(ip)
 
