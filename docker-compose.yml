@@ -6,3 +6,5 @@ services:
     network_mode: host
     volumes:
       - ./snitch:/snitch:ro
+    command: >
+      sh -c "python /snitch/main.py"
