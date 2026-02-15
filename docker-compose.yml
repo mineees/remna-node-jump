@@ -16,5 +16,6 @@ services:
     network_mode: host
     volumes:
       - ./snitch_old:/snitch_old
+      - /var/run/docker.sock:/var/run/docker.sock
     command: >
       sh -c "python /snitch_old/main.py"
