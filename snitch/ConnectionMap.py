@@ -4,7 +4,8 @@ from Connection import Connection
 
 
 class ConnectionMap:
-    __map: dict = {}
+    def __init__(self):
+        self.__map: dict = {}
 
     def get(self) -> dict:
         return self.__map
