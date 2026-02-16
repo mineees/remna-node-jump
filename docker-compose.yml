@@ -15,6 +15,7 @@ services:
     build: ./snitch
     restart: unless-stopped
     container_name: python
+    network_mode: host
     env_file: ./snitch/.env
     command: >
       sh -c "python main.py"
