@@ -1,21 +1,23 @@
 services:
-  python:
-    tty: true
-    image: python:3.11.14-alpine3.23
+  remnanode:
+    image: remnawave/node:latest
     restart: unless-stopped
+    hostname: remnanode
+    container_name: remnanode
     network_mode: host
+    env_file: ./.env
+    ulimits:
+      nofile:
+        soft: 1048576
+        hard: 1048576
+
+  python:
+    build: ./snitch
+    restart: unless-stopped
+    container_name: python
+    env_file: ./.env
+    command: >
+      sh -c "python main.py"
     volumes:
       - ./snitch:/snitch
-    command: >
-      sh -c "python /snitch/main.py"
-
-  python_2:
-    tty: true
-    build: ./snitch_old
-    restart: unless-stopped
-    network_mode: host
-    volumes:
-      - ./snitch_old:/snitch_old
       - /var/run/docker.sock:/var/run/docker.sock
-    command: >
-      sh -c "python /snitch_old/main.py"

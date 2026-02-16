@@ -1,48 +1,117 @@
+import json
+import os
+import subprocess
+import time
+import uuid
+from datetime import datetime
 from pathlib import Path
-from time import sleep, time
 
-from A import A
-from B import B
-from Connection import Connection
-from ConnectionMap import ConnectionMap
+# === НАСТРОЙКИ ===
+XRAY_CONTAINER = os.getenv("XRAY_CONTAINER", "xray")
+POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "1"))
+DISCONNECT_TIMEOUT = int(os.getenv("DISCONNECT_TIMEOUT", "15"))
+LOG_FILE = Path(__file__).resolve().parent / "volume" / "connections.log"
 
-c: ConnectionMap = ConnectionMap()
-d: ConnectionMap = ConnectionMap()
+users = {}
 
-if __name__ == "__main__":
-    a: A = A()
-    b: B = B()
+def log_event(event, user, session_id, duration=None):
+    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-    dir: Path = Path(__file__).resolve().parent
-    volume: Path = dir / "volume"
+    if duration is not None:
+        line = (
+            f"{ts} {event} session={session_id} "
+            f"user={user} duration={int(duration)}\n"
+        )
+    else:
+        line = f"{ts} {event} session={session_id} user={user}\n"
+
+    with open(LOG_FILE, "a") as f:
+        f.write(line)
+
+    print(line.strip(), flush=True)
+
+def get_stats():
+    try:
+        result = subprocess.check_output(
+            [
+                "docker", "exec", XRAY_CONTAINER,
+                "xray", "api", "statsquery",
+                "--server=0.0.0.0:61000"
+            ],
+            timeout=5
+        )
+        return json.loads(result)
+    except Exception as e:
+        print("ERROR getting stats:", e, flush=True)
+        return None
+
+def parse_users(stats):
+    res = {}
+    for item in stats.get("stat", []):
+        name = item.get("name", "")
+        value = int(item.get("value", 0))
+
+        if name.startswith("user>>>") and "traffic" in name:
+            user = name.split(">>>")[1]
+            res[user] = res.get(user, 0) + value
+
+    return res
+
+def main():
+    # print("Xray online logger with session_id + duration started", flush=True)
 
     while True:
-        sleep(1)
+        now = time.time()
+        data = get_stats()
+        if not data:
+            time.sleep(POLL_INTERVAL)
+            continue
 
-        connections: set = b.get([443, 2053])
+        traffic = parse_users(data)
 
-        for ip in connections:
-            if not c.exists(ip):
-                c.add(Connection(ip=ip, connected_at=int(time())))
+        # CONNECT / activity
+        for user, total in traffic.items():
+            state = users.get(user)
 
-        for connection in c.to_list():
-            connection.duration = int(time()) - connection.connected_at
+            if not state:
+                users[user] = {
+                    "last_total": total,
+                    "last_activity": now,
+                    "online": False,
+                    "session_id": None,
+                    "connect_time": None
+                }
+                continue
 
-            if connection.name is None:
-                name: str | None = a.detect(ip)
+            delta = total - state["last_total"]
 
-                if name is not None:
-                    connection.name = name
+            if delta > 0:
+                state["last_activity"] = now
 
-            if connection.ip not in connections:
-                connection.disconnected_at = int(time())
-                connection.duration = connection.disconnected_at - connection.connected_at
+                if not state["online"]:
+                    state["online"] = True
+                    state["session_id"] = uuid.uuid4().hex
+                    state["connect_time"] = now
+                    log_event("CONNECT", user, state["session_id"])
 
-                d.add(connection)
-                c.delete(connection.ip)
+            state["last_total"] = total
 
-        with (volume / "c.json").open("w") as file:
-            file.write(c.to_str())
+        # DISCONNECT
+        for user, state in users.items():
+            if state["online"] and now - state["last_activity"] > DISCONNECT_TIMEOUT:
+                duration = now - state["connect_time"]
+                log_event(
+                    "DISCONNECT",
+                    user,
+                    state["session_id"],
+                    duration=duration
+                )
 
-        with (volume / "d.json").open("w") as file:
-            file.write(d.to_str())
+                state["online"] = False
+                state["session_id"] = None
+                state["connect_time"] = None
+
+        time.sleep(POLL_INTERVAL)
+
+if __name__ == "__main__":
+    main()
