@@ -1,1 +1,1 @@
-chmod +x run.sh
+chmod +x up.sh

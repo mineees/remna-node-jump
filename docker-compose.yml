@@ -5,17 +5,17 @@ services:
     hostname: remnanode
     container_name: remnanode
     network_mode: host
-    env_file: ./.env
+    env_file: ./remnanode/.env
     ulimits:
       nofile:
         soft: 1048576
         hard: 1048576
 
-  python:
+  snitch:
     build: ./snitch
     restart: unless-stopped
     container_name: python
-    env_file: ./.env
+    env_file: ./snitch/.env
     command: >
       sh -c "python main.py"
     volumes:

@@ -36,7 +36,7 @@ def get_stats():
             [
                 "docker", "exec", XRAY_CONTAINER,
                 "xray", "api", "statsquery",
-                "--server=0.0.0.0:61000"
+                "--server=127.0.0.1:61000"
             ],
             timeout=5
         )
