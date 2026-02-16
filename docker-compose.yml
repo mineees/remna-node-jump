@@ -10,17 +10,3 @@ services:
       nofile:
         soft: 1048576
         hard: 1048576
-
-  snitch:
-    build: ./snitch
-    restart: unless-stopped
-    container_name: python
-    network_mode: host
-    env_file: ./snitch/.env
-    command: >
-      sh -c "python main.py"
-    volumes:
-      - ./snitch:/snitch
-      - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      - remnanode
