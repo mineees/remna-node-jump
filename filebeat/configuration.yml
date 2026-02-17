@@ -1,6 +1,4 @@
-output.logstash:
-  hosts: ["xrayelk.dev-dom.oraclesiebelcrm.com:5044"]
-
+filebeat.inputs:
   - type: log
     enabled: true
     paths:
@@ -16,3 +14,9 @@ output.logstash:
     fields:
       app: xray-connections
     fields_under_root: true
+
+output.logstash:
+  hosts: ["xrayelk.dev-dom.oraclesiebelcrm.com:5044"]
+
+logging.level: info
+logging.to_stderr: true
