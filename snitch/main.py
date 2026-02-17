@@ -1,16 +1,10 @@
+import datetime
 import json
-import os
 import subprocess
 import time
 import uuid
-from datetime import datetime
-from pathlib import Path
 
-# === НАСТРОЙКИ ===
-XRAY_CONTAINER = os.getenv("XRAY_CONTAINER", "xray")
-POLL_INTERVAL = int(os.getenv("POLL_INTERVAL", "1"))
-DISCONNECT_TIMEOUT = int(os.getenv("DISCONNECT_TIMEOUT", "15"))
-LOG_FILE = Path(__file__).resolve().parent / "volume" / "connections.log"
+import conf
 
 users = {}
 
@@ -25,7 +19,7 @@ def log_event(event, user, session_id, duration=None):
     else:
         line = f"{ts} {event} session={session_id} user={user}\n"
 
-    with open(LOG_FILE, "a") as f:
+    with conf.__OUTPUT_FILEPATH__.open("a") as f:
         f.write(line)
 
     print(line.strip(), flush=True)
@@ -34,9 +28,9 @@ def get_stats():
     try:
         result = subprocess.check_output(
             [
-                "docker", "exec", XRAY_CONTAINER,
+                "docker", "exec", conf.__XRAY_DOCKER_CONTAINER_NAME__,
                 "xray", "api", "statsquery",
-                "--server=127.0.0.1:61000"
+                f"--server={conf.__XRAY_API_ADDR__}"
             ],
             timeout=5
         )
@@ -64,7 +58,7 @@ def main():
         now = time.time()
         data = get_stats()
         if not data:
-            time.sleep(POLL_INTERVAL)
+            time.sleep(conf.__POLLING_INTERVAL__)
             continue
 
         traffic = parse_users(data)
@@ -98,7 +92,7 @@ def main():
 
         # DISCONNECT
         for user, state in users.items():
-            if state["online"] and now - state["last_activity"] > DISCONNECT_TIMEOUT:
+            if state["online"] and now - state["last_activity"] > conf.__CONNECTION_DISCONNECT_TIMEOUT__:
                 duration = now - state["connect_time"]
                 log_event(
                     "DISCONNECT",
@@ -111,7 +105,7 @@ def main():
                 state["session_id"] = None
                 state["connect_time"] = None
 
-        time.sleep(POLL_INTERVAL)
+        time.sleep(conf.__POLLING_INTERVAL__)
 
 if __name__ == "__main__":
     main()
