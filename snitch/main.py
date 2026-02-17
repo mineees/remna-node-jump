@@ -9,7 +9,7 @@ import conf
 users = {}
 
 def log_event(event, user, session_id, duration=None):
-    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     if duration is not None:
         line = (
