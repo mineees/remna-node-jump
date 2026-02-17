@@ -27,3 +27,15 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - remnanode
+
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:9.3.0
+    restart: unless-stopped
+    container_name: filebeat
+    volumes:
+      - ./filebeat/volume:/usr/share/filebeat/data
+      - ./filebeat/configuration.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./remnanode/volume/access.log:/var/log/app/xray-access.log:ro
+      - ./snitch/volume/connections.log:/var/log/app/connections.log:ro
+    depends_on:
+      - remnanode

@@ -1,0 +1,18 @@
+output.logstash:
+  hosts: ["xrayelk.dev-dom.oraclesiebelcrm.com:5044"]
+
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/app/xray-access.log
+    fields:
+      app: xray-access
+    fields_under_root: true
+
+  - type: log
+    enabled: true
+    paths:
+      - /var/log/app/connections.log
+    fields:
+      app: xray-connections
+    fields_under_root: true
