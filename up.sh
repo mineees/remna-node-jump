@@ -25,13 +25,15 @@ run() {
 }
 
 env() {
-    info "Проверка существование [.env] файла..."
+    info "Проверка существование [.env] файлов..."
 
-    if [[ -f .env ]]; then
-        success "Файл [.env] найден."
-    else
-        fail "Файл [.env] не найден."
-    fi
+    for dir in remnanode snitch; do
+        if [[ -f "$dir/.env" ]]; then
+            success "Файл [$dir/.env] найден."
+        else
+            fail "Файл [$dir/.env] не найден."
+        fi
+    done
 }
 
 upDockerCompose() {
