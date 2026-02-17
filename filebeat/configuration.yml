@@ -1,3 +1,5 @@
+name: "u-timehollyname"
+
 filebeat.inputs:
   - type: filestream
     id: xray-access
@@ -7,6 +9,8 @@ filebeat.inputs:
     fields:
       app: xray-access
     fields_under_root: true
+    prospector.scanner.fingerprint.enabled: false
+    file_identity.native: ~
 
   - type: filestream
     id: xray-connections
@@ -16,6 +20,8 @@ filebeat.inputs:
     fields:
       app: xray-connections
     fields_under_root: true
+    prospector.scanner.fingerprint.enabled: false
+    file_identity.native: ~
 
 output.logstash:
   hosts: ["xrayelk.dev-dom.oraclesiebelcrm.com:5044"]
