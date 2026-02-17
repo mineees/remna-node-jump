@@ -3,19 +3,19 @@
 set -euo pipefail
 
 info() {
-    echo "[INFO] $(date '+%H:%M:%S') $*";
+    echo "\033[0;34m[INFO]\033[0m $(date '+%H:%M:%S') $*";
 }
 
 success() {
-    echo "[SUCCESS] $(date '+%H:%M:%S') $*";
+    echo "\033[0;32m[SUCCESS]\033[0m $(date '+%H:%M:%S') $*";
 }
 
 warning() {
-    echo "[WARNING] $(date '+%H:%M:%S') $*";
+    echo "\033[0;33m[WARNING]\033[0m $(date '+%H:%M:%S') $*";
 }
 
 fail() {
-    echo "[FAIL] $(date '+%H:%M:%S') $*" >&2; exit 1;
+    echo "\033[0;31m[FAIL]\033[0m $(date '+%H:%M:%S') $*" >&2; exit 1;
 }
 
 run() {
@@ -27,7 +27,7 @@ run() {
 env() {
     info "Проверка существование [.env] файлов..."
 
-    for dir in remnanode snitch; do
+    for dir in filebeat remnanode snitch; do
         if [[ -f "$dir/.env" ]]; then
             success "Файл [$dir/.env] найден."
         else

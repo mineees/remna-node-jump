@@ -2,10 +2,10 @@ services:
   remnanode:
     image: remnawave/node:latest
     restart: unless-stopped
-    hostname: remnanode
     container_name: remnanode
     network_mode: host
-    env_file: ./remnanode/.env
+    env_file:
+      - ./remnanode/.env
     volumes:
       - ./remnanode/volume:/var/log/xray
     ulimits:
@@ -16,10 +16,10 @@ services:
   snitch:
     build: ./snitch
     restart: unless-stopped
-    hostname: snitch
     container_name: snitch
     network_mode: host
-    env_file: ./snitch/.env
+    env_file:
+      - ./snitch/.env
     command: >
       sh -c "python main.py"
     volumes:
@@ -33,10 +33,12 @@ services:
     image: docker.elastic.co/beats/filebeat:9.3.0
     restart: unless-stopped
     container_name: filebeat
+    env_file:
+      - ./filebeat/.env
     volumes:
       - ./filebeat/volume:/usr/share/filebeat/data
-      - ./filebeat/configuration.yml:/usr/share/filebeat/filebeat.yml:ro
-      - ./remnanode/volume/access.log:/var/log/app/xray-access.log:ro
-      - ./snitch/volume/connections.log:/var/log/app/connections.log:ro
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./remnanode/volume:/var/log/remnanode:ro
+      - ./snitch/volume:/var/log/snitch:ro
     depends_on:
-      - remnanode
+      - snitch

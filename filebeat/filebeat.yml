@@ -1,11 +1,17 @@
-name: "u-timehollyname"
+name: "${FILEBEAT_NAME}"
+
+logging.level: ${FILEBEAT_LOGGING_LEVEL}
+logging.to_stderr: true
+
+output.logstash:
+  hosts: ["${LOGSTASH_HOST}:${LOGSTASH_PORT}"]
 
 filebeat.inputs:
   - type: filestream
     id: xray-access
     enabled: true
     paths:
-      - /var/log/app/xray-access.log
+      - /var/log/remnanode/access.log
     fields:
       app: xray-access
     fields_under_root: true
@@ -16,15 +22,9 @@ filebeat.inputs:
     id: xray-connections
     enabled: true
     paths:
-      - /var/log/app/connections.log
+      - /var/log/snitch/connections.log
     fields:
       app: xray-connections
     fields_under_root: true
     prospector.scanner.fingerprint.enabled: false
     file_identity.native: ~
-
-output.logstash:
-  hosts: ["xrayelk.dev-dom.oraclesiebelcrm.com:5044"]
-
-logging.level: info
-logging.to_stderr: true
